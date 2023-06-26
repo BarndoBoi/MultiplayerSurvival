@@ -8,17 +8,27 @@ public class GridRender : MonoBehaviour
     public GameObject mapParent;
     public GameObject tilePrefab;
     public Grid Grid;
-    GameObject[,] renderedTiles;
-    List<GameObject> renderers = new List<GameObject>();
-    public TerrainColors[] colors;
+    
+    public List<NoiseToSpriteGroup> sprites = new List<NoiseToSpriteGroup>();
+    public Dictionary<string, RenderPool> layerRenderers = new Dictionary<string, RenderPool>(); //Match a layer name to a list of renderers
 
     private int lastWidth, lastHeight;
 
     [System.Serializable]
-    public struct TerrainColors
+    public struct NoiseToSprite
     {
-        public float noiseMax;
+        public float noiseMin, noiseMax;
         public Color color;
+        public Sprite sprite;
+    }
+
+    [System.Serializable]
+    public class NoiseToSpriteGroup
+    {
+        public string noiseLayer;
+        public NoiseToSprite[] noiseToSprites;
+        public bool useSprite;
+        public int spriteLayer;
     }
 
     public void CreateRenderers()
@@ -26,56 +36,58 @@ public class GridRender : MonoBehaviour
         if (Grid.Tiles == null)
             throw new System.Exception("Error: Attempted to create renderers with no tile data in grid");
 
-        if (renderedTiles == null)
-            renderedTiles = new GameObject[Grid.height, Grid.width];
-
-        else if (lastWidth != Grid.width || lastHeight != Grid.height)
-        { //The dimensions have changed so we need to resize our array
-
-            renderedTiles = new GameObject[Grid.height, Grid.width];
-            
-        }
-
-        lastWidth = Grid.width;
-        lastHeight = Grid.height;
-        int listIndex = 0;
-        for (int i = 0; i < Grid.height; i++)
+        for (int height = 0;  height < Grid.height; height++)
         {
-            for (int j = 0; j < Grid.width; j++)
+            for (int width = 0; width < Grid.width; width++)
             {
-                GameObject tile;
-                if (renderedTiles[i, j] == null)
-                {
-                    if (listIndex < renderers.Count)
+                TileData tile = Grid.Tiles[height, width];
+                foreach (string key in tile.noise.Keys)
+                { //Check our layerRenderers to see if we have a pool for that layer
+                    RenderPool pool;
+                    NoiseToSpriteGroup spriteGroup = null;
+                    if (layerRenderers.ContainsKey(key))
                     {
-                        tile = renderers[listIndex];
-                        tile.SetActive(true);
-                        tile.transform.position = new Vector3(i, j);
+                        pool = layerRenderers[key];
                     }
                     else
                     {
-                        tile = GameObject.Instantiate(tilePrefab, new Vector3(i, j), Quaternion.identity, mapParent.transform);
-                        renderers.Add(tile);
+                        pool = new RenderPool();
+                        layerRenderers.Add(key, pool);
                     }
-                    renderedTiles[i, j] = tile;
-                }
-                tile = renderedTiles[i, j];
-                listIndex++;
-                SpriteRenderer rend = tile.GetComponent<SpriteRenderer>();
-                
-                foreach (TerrainColors terrains in colors)
-                {
-                    if (Grid.Tiles[i, j].elevationNoise >= terrains.noiseMax)
-                        rend.color = terrains.color;
+                    pool.Reset();
+
+                    //Next lets find the weights to sprite group
+                    for (int i = 0; i < sprites.Count; i++)
+                    {
+                        if (sprites[i].noiseLayer == key)
+                        {
+                            spriteGroup = sprites[i];
+                            break; //Early exit
+                        }
+                    }
+                    if (spriteGroup == null)
+                        continue; //If we didn't find rules to render this layer we should skip to the next layer
+
+                    //Otherwise we now have all the info to create the tile for this layer
+                    foreach (NoiseToSprite weights in spriteGroup.noiseToSprites)
+                    {
+                        if (tile.noise[key] >= weights.noiseMin && tile.noise[key] <= weights.noiseMax)
+                        { //We can create the tile now
+                            GameObject renderer = pool.GetRenderer(tilePrefab, mapParent.transform);
+                            renderer.transform.position = new Vector2(height, width);
+                            SpriteRenderer sprite = renderer.GetComponent<SpriteRenderer>();
+                            if (spriteGroup.useSprite)
+                                sprite.sprite = weights.sprite; //Change the square sprite to the one specified
+                            sprite.color = weights.color;
+                            sprite.sortingOrder = spriteGroup.spriteLayer;
+                        }
+                    }
                 }
             }
         }
-        if (listIndex < renderers.Count)
-        { //We have leftover tiles
-            for ( int i = listIndex + 1; i < renderers.Count; i++ ) 
-            {
-                renderers[i].SetActive(false);
-            }
+        foreach (RenderPool pool in layerRenderers.Values)
+        {
+            pool.Trim(); //Have each pool deactivate any unused renderers.
         }
     }
 }

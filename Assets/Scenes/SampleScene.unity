@@ -697,7 +697,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.013359681, g: 0, b: 0.3207547, a: 0}
+  m_BackGroundColor: {r: 0.1792453, g: 0.09213498, b: 0.07338911, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -714,7 +714,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 77.11688
+  orthographic size: 39.624054
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -738,7 +738,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 75, y: 75, z: -10}
+  m_LocalPosition: {x: 38.1, y: 37, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1328,25 +1328,55 @@ MonoBehaviour:
   mapParent: {fileID: 1558639637}
   tilePrefab: {fileID: 8215843464457891945, guid: eea0ab7139e141442897469c0e6db623, type: 3}
   Grid: {fileID: 1558639639}
-  colors:
-  - noiseMax: 0
-    color: {r: 0, g: 0.13318908, b: 0.754717, a: 1}
-  - noiseMax: 0.09
-    color: {r: 0, g: 0.52995396, b: 1, a: 1}
-  - noiseMax: 0.35
-    color: {r: 0.8263004, g: 0.8584906, b: 0.3514952, a: 1}
-  - noiseMax: 0.5
-    color: {r: 0.28263888, g: 0.59607846, b: 0.19999999, a: 1}
-  - noiseMax: 0.6
-    color: {r: 0.4670258, g: 0.59607846, b: 0.19999999, a: 1}
-  - noiseMax: 0.7
-    color: {r: 0.37787816, g: 0.41509432, b: 0.14645779, a: 1}
-  - noiseMax: 0.75
-    color: {r: 0.5471698, g: 0.51058066, b: 0.15176219, a: 1}
-  - noiseMax: 0.8
-    color: {r: 0.7647059, g: 0.54937327, b: 0.41568628, a: 1}
-  - noiseMax: 0.9
-    color: {r: 0.6415094, g: 0.36250654, b: 0.19003202, a: 1}
+  sprites:
+  - noiseLayer: Elevation
+    noiseToSprites:
+    - noiseMin: 0
+      noiseMax: 0.2
+      color: {r: 0.115681686, g: 0.26308566, b: 0.6320754, a: 1}
+      sprite: {fileID: 0}
+    - noiseMin: 0.2
+      noiseMax: 0.3
+      color: {r: 0.11968666, g: 0.55939156, b: 0.7735849, a: 1}
+      sprite: {fileID: 0}
+    - noiseMin: 0.3
+      noiseMax: 0.35
+      color: {r: 0.98249227, g: 1, b: 0.5509434, a: 1}
+      sprite: {fileID: 0}
+    - noiseMin: 0.35
+      noiseMax: 0.5
+      color: {r: 0.4321423, g: 0.77254903, b: 0.121568605, a: 1}
+      sprite: {fileID: 0}
+    - noiseMin: 0.5
+      noiseMax: 0.65
+      color: {r: 0.16183265, g: 0.6037736, b: 0.12758985, a: 1}
+      sprite: {fileID: 0}
+    - noiseMin: 0.65
+      noiseMax: 0.7
+      color: {r: 0.764151, g: 0.5237169, b: 0, a: 1}
+      sprite: {fileID: 0}
+    - noiseMin: 0.7
+      noiseMax: 0.8
+      color: {r: 0.7735849, g: 0.38563406, b: 0.19996434, a: 1}
+      sprite: {fileID: 0}
+    - noiseMin: 0.8
+      noiseMax: 0.9
+      color: {r: 0.8207547, g: 0.28184405, b: 0.40840152, a: 1}
+      sprite: {fileID: 0}
+    - noiseMin: 0.9
+      noiseMax: 1
+      color: {r: 0.8962264, g: 0.36694553, b: 0.73258525, a: 1}
+      sprite: {fileID: 0}
+    useSprite: 0
+    spriteLayer: 0
+  - noiseLayer: Trees
+    noiseToSprites:
+    - noiseMin: 0.35
+      noiseMax: 0.7
+      color: {r: 1, g: 1, b: 1, a: 1}
+      sprite: {fileID: 21300000, guid: 1857226227a3d31458f2f1a2588d2b7b, type: 3}
+    useSprite: 1
+    spriteLayer: 1
 --- !u!114 &1558639639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1359,38 +1389,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 507055558845eea4eaac5d5fbc282584, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  height: 100
-  width: 150
+  height: 75
+  width: 75
   seed: 1000
-  Weights:
-  - layer:
-      layerName: BaseElevation
-      noiseOffsetX: 0
-      noiseOffsetY: 0
-      noiseScale: 0.038
-      subtractive: 0
-    weight: 0.8
-  - layer:
-      layerName: ExtraElevationNoise
-      noiseOffsetX: 0
-      noiseOffsetY: 0
-      noiseScale: 0.018
-      subtractive: 0
-    weight: 0.5
-  - layer:
-      layerName: Details
-      noiseOffsetX: 0
-      noiseOffsetY: 0
-      noiseScale: 0.32
-      subtractive: 0
-    weight: 0.23
-  - layer:
-      layerName: Details
-      noiseOffsetX: 0
-      noiseOffsetY: 0
-      noiseScale: 0.056
-      subtractive: 1
-    weight: 0.48
+  GridWeights:
+  - GroupName: Elevation
+    weights:
+    - layer:
+        noiseOffsetX: 0
+        noiseOffsetY: 0
+        noiseScale: 0.19
+        subtractive: 0
+      weight: 0.8
+    - layer:
+        noiseOffsetX: 10
+        noiseOffsetY: 0
+        noiseScale: 0.5
+        subtractive: 0
+      weight: 0.5
+    - layer:
+        noiseOffsetX: 0
+        noiseOffsetY: 10
+        noiseScale: 0.3
+        subtractive: 1
+      weight: 0.25
+  - GroupName: Trees
+    weights:
+    - layer:
+        noiseOffsetX: 0
+        noiseOffsetY: 0
+        noiseScale: 0.19
+        subtractive: 0
+      weight: 0.8
+    - layer:
+        noiseOffsetX: 10
+        noiseOffsetY: 0
+        noiseScale: 0.5
+        subtractive: 0
+      weight: 0.5
+    - layer:
+        noiseOffsetX: 0
+        noiseOffsetY: 10
+        noiseScale: 0.3
+        subtractive: 1
+      weight: 0.25
 --- !u!4 &1558639640
 Transform:
   m_ObjectHideFlags: 0

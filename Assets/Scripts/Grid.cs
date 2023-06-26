@@ -1,4 +1,3 @@
-using StandTogether;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -8,8 +7,7 @@ public class Grid : MonoBehaviour
 {
     public int height, width, seed;
     public TileData[,] Tiles;
-    public float[,] elevations;
-    public List<NoiseLayerWithWeight> Weights;
+    public List<NoiseLayerGroup> GridWeights = new List<NoiseLayerGroup>();
 
     private void Awake()
     {
@@ -23,10 +21,16 @@ public class Grid : MonoBehaviour
         public float weight;
     }
 
+    [System.Serializable]
+    public struct NoiseLayerGroup
+    {
+        public string GroupName;
+        public List<NoiseLayerWithWeight> weights;
+    }
+
     public void CreateMap()
     {
         Tiles = new TileData[height, width];
-        elevations = new float[height, width];
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
@@ -35,31 +39,41 @@ public class Grid : MonoBehaviour
                 Tiles[i, j].x = i;
                 Tiles[i, j].y = j;
                 Tiles[i, j].GridContainer = this;
-                float elevation = 0;
-                float maxWeight = 0;
-                foreach (NoiseLayerWithWeight weight in Weights)
+                
+                foreach (NoiseLayerGroup g in GridWeights)
                 {
-                    if (weight.layer.subtractive)
-                    {
-                        elevation -= Mathf.PerlinNoise((i + (weight.layer.noiseOffsetY + seed)) * weight.layer.noiseScale,
-                        (j + (weight.layer.noiseOffsetY + seed)) * weight.layer.noiseScale) * weight.weight;
-
-                        maxWeight -= weight.weight;
-                    }
-                    else
-                    {
-                        elevation += Mathf.PerlinNoise((i + (weight.layer.noiseOffsetY + seed)) * weight.layer.noiseScale,
-                            (j + (weight.layer.noiseOffsetY + seed)) * weight.layer.noiseScale) * weight.weight;
-                        maxWeight += weight.weight;
-                    }
-                    
+                    Tiles[i, j].noise[g.GroupName] = SumWeights(g.weights, i, j); //Get the weights at this tile for each layer
                 }
-                Tiles[i, j].elevationNoise = Mathf.InverseLerp(0, maxWeight, elevation);
-                elevations[i, j] = Tiles[i, j].elevationNoise;
             }
         }
         //Temporary for testing purposes
         GetComponent<GridRender>().CreateRenderers();
+    }
+
+    public float SumWeights(List<NoiseLayerWithWeight> layers, int i, int j)
+    {
+        float noise = 0;
+        float maxWeight = 0;
+        foreach (NoiseLayerWithWeight weight in layers)
+        {
+            
+            if (weight.layer.subtractive)
+            {
+                noise -= Mathf.PerlinNoise((i + (weight.layer.noiseOffsetY + seed)) * weight.layer.noiseScale,
+                (j + (weight.layer.noiseOffsetY + seed)) * weight.layer.noiseScale) * weight.weight;
+
+                maxWeight -= weight.weight;
+            }
+            else
+            {
+                noise += Mathf.PerlinNoise((i + (weight.layer.noiseOffsetY + seed)) * weight.layer.noiseScale,
+                    (j + (weight.layer.noiseOffsetY + seed)) * weight.layer.noiseScale) * weight.weight;
+                maxWeight += weight.weight;
+            }
+
+        }
+
+        return Mathf.InverseLerp(0, maxWeight, noise);
     }
 
     public List<TileData> GetNeighbors(TileData source)
